@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+
+# Exit cleanly from an early interrupt
+Signal.trap("INT") { exit 1 }
+
+require 'optparse'
+require 'logger'
+require 'benchmark'
+
+require_relative 'entities/ontology'
+require_relative 'entities/agent'
+
+LOV_ENDPOINT = "http://localhost:3030/lov"
+LOVPORTAL_ENDPOINT = "http://0.0.0.0:9393"
+
+def parse_options
+  options = {}
+  OptionParser.new do |opts|
+    opts.banner = "Usage: lov_migrator [options]"
+    opts.on('--agents') { options[:agents] = true }
+    opts.on('-h', '--help', 'Display this screen') do
+      puts opts
+      exit
+    end
+  end.parse!
+
+  raise OptionParser::MissingArgument, "You must specify at least one argument." if options.empty?
+  options
+end
+
+def logger(text, &block)
+  puts ">> #{text} starting..."
+time = Benchmark.realtime do
+  block.call
+end
+puts "#{text} finished in #{time} seconds"
+end
+
+def main(options)
+  logger = Logger.new(STDOUT)
+  
+  if options[:agents]
+    agents = []
+    logger("Fetching all Agents") do
+      agents = Agent.fetch_all
+    end
+    agents.each do |agent| 
+      logger("Uploading <#{agent.name}> to LovPortal") do
+        agent.upload  
+      end  
+    end
+  end
+end
+
+# Entry point
+options = parse_options
+main(options)
