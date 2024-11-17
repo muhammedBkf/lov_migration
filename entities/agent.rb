@@ -1,6 +1,10 @@
 require_relative 'base_entity' 
 require 'set'
 class Agent < BaseEntity
+  def initialize(data)
+    super
+    extract_identifiers
+  end
   def self.type
     "Agent"
   end
