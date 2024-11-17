@@ -23,8 +23,8 @@ class Agent < BaseEntity
             ?agent a foaf:Person, foaf:Organization.
           }
           BIND(IF(?rdfType = foaf:Person, "person", "organization") AS ?agentType)
-          BIND(IF(STRSTARTS(STR(?agent), "mailto:"), SUBSTR(STR(?agent), 8), "") AS ?email)
-          BIND(IF(?rdfType = foaf:Organization, ?agent, "") AS ?homepage)
+          BIND(IF(STRSTARTS(STR(?agent), "mailto:"), SUBSTR(STR(?agent), 8), "") AS ?email) # if the agent URI starts with mailto we extract the email
+          BIND(IF(?rdfType = foaf:Organization, ?agent, "") AS ?homepage) # if it's an Organization we store the URI as homepage
 
         }
         GROUP BY ?agent ?agentType ?name ?email ?homepage LIMIT 50
