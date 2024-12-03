@@ -37,17 +37,23 @@ puts "#{text} finished in #{time} seconds"
 end
 
 def main(options)
-  logger = Logger.new(STDOUT)
-  
+  logger = Logger.new(STDOUT)  
   if options[:agents]
     agents = []
     logger("Fetching all Agents") do
       agents = Agent.fetch_all
+      Agent.fetch_and_save_agent_names
+
     end
-    agents.each do |agent| 
-      logger("Uploading <#{agent.name}> to LovPortal") do
-        agent.upload  
-      end  
+    
+    agents.each do |agent|
+      logger("Uploading <#{agent.name}> to LovPortal") do   
+        if agent.exists?
+          puts "Agent already exists"
+        else
+          agent.upload  
+        end  
+      end
     end
   end
 end

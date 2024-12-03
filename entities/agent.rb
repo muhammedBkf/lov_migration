@@ -11,6 +11,12 @@ class Agent < BaseEntity
   def self.upload_endpoint
     "Agents"
   end
+  def self.fetch_and_save_agent_names
+    url = URI("#{LOVPORTAL_ENDPOINT}/agents")
+    response = Net::HTTP.get(url)
+    agents = JSON.parse(response)
+    @@agentNames = agents.map { |agent| agent["name"] }.compact
+  end
 
   def self.build_sparql_query(data)
       # Combine parts into a SPARQL query
@@ -57,5 +63,8 @@ class Agent < BaseEntity
 
     end
     @identifiers
+  end
+  def exists? 
+    @@agentNames.include?(self.name)
   end
 end
