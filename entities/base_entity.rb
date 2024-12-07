@@ -22,6 +22,23 @@ class BaseEntity
   def self.upload_endpoint
     "Generic"
   end
+def self.set_target_portal(value)
+    @@targetPortal = value
+  end
+  def self.targetPortal
+    @@targetPortal
+  end
+
+  def self.target_portal_dispatch_vocabs
+  csv_file = 'LOV_vocabularies_dispatch.csv'
+    vocabs = []
+      CSV.foreach(csv_file, headers: true) do |row|
+        if  row['destination']
+          vocabs << row["prefix"] if row['destination'].include?(@@targetPortal)
+        end
+      end
+    vocabs
+  end
   
   def self.fetch_all
     entities = []
@@ -122,7 +139,16 @@ class BaseEntity
       else
         where_clauses << pattern
       end
+end
+    # only query Vocabs of the selected target portal
+    vocabsAcronymFilter = ""
+    p vocabsAcronyms
+    if vocabsAcronyms
 
+vocabsAcronymFilter = "VALUES ?acronym { #{vocabsAcronyms.map { |ontology| "\"#{ontology}\"" }.join(" ")} }"
+    elsif @@targetPortal
+      targetPortalVocabs = target_portal_dispatch_vocabs.map { |ontology| "\"#{ontology}\"" }.join(" ")
+      vocabsAcronymFilter = "VALUES ?acronym { #{targetPortalVocabs} }"
     end
 
       # Combine parts into a SPARQL query
@@ -138,7 +164,8 @@ class BaseEntity
         ?Vocabulary a voaf:Vocabulary.
 
         #{where_clauses.join("\n  ")}
-      } GROUP BY ?catalog
+        #{vocabsAcronymFilter}
+      } GROUP BY #{DATA_MAPPING["group_by"][self.type]} ORDER BY (?released)
       SPARQL
   end
   # This is used to upload an entity (Agent, Ontology, Submission)

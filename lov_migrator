@@ -6,6 +6,7 @@ Signal.trap("INT") { exit 1 }
 require 'optparse'
 require 'logger'
 require 'benchmark'
+require 'csv'
 
 require_relative 'entities/ontology'
 require_relative 'entities/agent'
