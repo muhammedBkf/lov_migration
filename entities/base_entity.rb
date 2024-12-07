@@ -5,6 +5,8 @@ require 'net/http'
 require 'json'
 
 class BaseEntity
+  @@targetPortal = nil
+
   # Initialize attributes based on the given hash
   def initialize(data)
    data.each do |key, properties|
@@ -113,7 +115,7 @@ def self.set_target_portal(value)
     end
   end
 
-  def self.build_sparql_query(data)
+  def self.build_sparql_query(data, vocabsAcronyms=nil)
     select_vars = []
     where_clauses = []
 
