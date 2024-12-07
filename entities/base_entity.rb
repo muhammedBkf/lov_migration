@@ -40,10 +40,10 @@ def self.set_target_portal(value)
     vocabs
   end
   
-  def self.fetch_all
+  def self.fetch_all(vocabsAcronyms=nil)
     entities = []
     entity_type = self.type
-    
+    query = build_sparql_query(DATA_MAPPING[entity_type], vocabsAcronyms)
     query = build_sparql_query(DATA_MAPPING[entity_type])
     sparql_query(query).map do |entity|
       entity = new(entity)
