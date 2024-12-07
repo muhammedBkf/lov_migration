@@ -64,6 +64,52 @@ def main(options)
       end
     end
   end
+
+  if options[:vocabs]
+    if options[:targetPortal]
+      Ontology.set_target_portal(options[:targetPortal])
+    end
+    ontologies = []
+    Ontology.set_target_portal('LovPortal')
+    logger("Fetching all Ontologies") do
+      ontologies = Ontology.fetch_all
+    end
+    
+    ontologies.each do |ontology|
+      logger("Uploading #{ontology.name} to LovPortal") do   
+        response = ontology.upload
+        p response.code, response.body
+      end  
+    end
+  end
+
+  if options[:submissions]
+    if options[:targetPortal]
+      Submission.set_target_portal(options[:targetPortal])
+    end
+    vocabsAcronyms = nil
+    if options[:submissions][0] != "all"
+      vocabsAcronyms = options[:submissions]
+    end
+    submissions = Submission.fetch_all(vocabsAcronyms)
+    
+    unique_submissions = submissions.group_by { |sub| sub.acronym }.transform_values do |records|
+      # Choose the first record or apply custom logic
+      records.first
+    end.values
+  
+    p unique_submissions
+    unique_submissions.each do |submission|
+      begin
+        submission.pull_submission
+        submission.upload
+      rescue
+          p submission
+        
+        end
+      end
+  end
+
 end
 
 # Entry point
