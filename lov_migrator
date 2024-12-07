@@ -17,7 +17,14 @@ def parse_options
   options = {}
   OptionParser.new do |opts|
     opts.banner = "Usage: lov_migrator [options]"
-    opts.on('--agents') { options[:agents] = true }
+    opts.on('--agents', 'Start agents migration') { options[:agents] = true }
+    opts.on('--vocabs') { options[:vocabs] = true }
+    opts.on('--submissions ONTOLOGIES') do |ontologies|
+      options[:submissions] = ontologies.split(",")
+    end
+    opts.on('--target-portal PORTAL') do |targetPortal|
+      options[:targetPortal] = targetPortal
+    end
     opts.on('-h', '--help', 'Display this screen') do
       puts opts
       exit
