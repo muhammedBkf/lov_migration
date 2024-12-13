@@ -134,14 +134,31 @@ def self.set_target_portal(value)
                       else
                         ""  # No language filter for any language
       end        
-      pattern = "?#{properties["lov_class"]} #{lov_type} ?#{var_name}. #{lang_filter}"
     
-      # Add to SELECT clause with GROUP_CONCAT
-      select_vars << "(GROUP_CONCAT(DISTINCT ?#{var_name}; separator=\",\") AS ?#{key})"
+      # Add to SELECT clause 
+      if properties["pk"]
+        var_name = "#{key}"
+        select_var = "?#{var_name}"
+        groupBy << " #{select_var}"
+      else
+        select_var = "(GROUP_CONCAT(DISTINCT ?#{var_name}; separator=\";\") AS ?#{key})"
+      end
+      select_vars << select_var
+      
+      # Define the pattern for the query based on the lov_class and lov_type
+      pattern = "?#{properties["lov_class"]} #{lov_type} ?#{var_name}. #{lang_filter}"
     
       # Wrap in OPTIONAL {} if optional is set to true
       if properties["optional"]
         where_clauses << "OPTIONAL { #{pattern} }"
+      # Special handling for adding agents
+      elsif AGENTS_ATTRIBUTES.include?(key)
+        
+        contributor_creator_pattern = "?Vocabulary #{lov_type} ?_#{key}_uri. ?_#{key}_uri foaf:name ?_#{key}"
+        # Avoid duplicate where clauses for contributors and creators
+        unless where_clauses.any? { |clause| clause.include?("foaf:name ?_#{key}_name") }
+          where_clauses << "OPTIONAL { #{contributor_creator_pattern} }"
+        end
       else
         where_clauses << pattern
       end
