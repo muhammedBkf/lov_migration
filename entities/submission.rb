@@ -10,7 +10,12 @@ class Submission < BaseEntity
   end
   
   def pull_submission
-    file_path = "./tmp/#{@acronym}.n3"
+    # Get the basename (filename without path) from the remote URI
+    remote_filename = File.basename(URI.parse(@pullLocationn).path)
+  
+    # Construct the local file path with the remote filename
+    file_path = "./tmp/#{remote_filename}"
+  
     uri = URI.parse(@pullLocationn)
     Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
       request = Net::HTTP::Get.new(uri)
