@@ -92,20 +92,47 @@ def main(options)
       vocabsAcronyms = options[:submissions]
     end
     submissions = Submission.fetch_all(vocabsAcronyms)
-    
+    p submissions
+'''    unique_submissions = submissions.group_by { |sub| sub.acronym }.transform_values do |records|
+      # Select the record that has URI in pullLocation
+      records.find { |record| record.pullLocationn&.include?("http") } || records.first
+    end.values
+    p unique_submissions'''
+    # this code is used to pull the latest submissions that has a file
     unique_submissions = submissions.group_by { |sub| sub.acronym }.transform_values do |records|
-      # Choose the first record or apply custom logic
+      # Filter records with URI first
+      uri_records = records.select { |record| record.pullLocationn&.include?("http") }
+      
+      # If there are URI records, find the most recent one
+      if uri_records.any?
+        uri_records.sort_by { |record| record.released || Time.at(0) }.reverse.first
+      else
+        # Fallback to the first record if no URI records exist
       records.first
+      end
     end.values
   
-    p unique_submissions
+    File.open("error_logs.txt", "a") do |file|  # Open the file in append mode
     unique_submissions.each do |submission|
       begin
         submission.pull_submission
         submission.upload
       rescue
           p submission
-        
+          response = submission.upload
+          p response.code, response.body
+        rescue StandardError => e
+          # Write the error details to the file
+          file.puts("Error with submission: #{submission.inspect}")
+          file.puts("Exception: #{e.message}")
+          if defined?(response) && response
+            file.puts("Response Code: #{response.code}")
+            file.puts("Response Body: #{response.body}")
+          else
+            file.puts("No response available.")
+          end
+          file.puts("---")  # Separator for readability
+        end
         end
       end
   end
