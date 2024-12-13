@@ -18,7 +18,7 @@ class Agent < BaseEntity
     @@potalAgents = JSON.parse(response)
   end
 
-  def self.build_sparql_query(data)
+  def self.build_sparql_query(data, vocabsAcronyms=nil)
       # Combine parts into a SPARQL query
       <<-SPARQL
         PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -37,7 +37,7 @@ class Agent < BaseEntity
           BIND(IF(?rdfType = foaf:Organization, ?agent, "") AS ?homepage) # if it's an Organization we store the URI as homepage
 
         }
-        GROUP BY ?agent ?agentType ?name ?email ?homepage LIMIT 50
+        GROUP BY ?agent ?agentType ?name ?email ?homepage 
       SPARQL
   end
 
