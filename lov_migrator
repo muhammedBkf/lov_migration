@@ -50,8 +50,7 @@ def main(options)
     agents = []
     logger("Fetching all Agents") do
       agents = Agent.fetch_all
-      Agent.fetch_and_save_agent_names
-
+      Agent.fetch_and_save_portal_agents
     end
     
     agents.each do |agent|
