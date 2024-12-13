@@ -64,7 +64,16 @@ class Agent < BaseEntity
     end
     @identifiers
   end
+  def self.get_agent_id_by_name(name)
+    if !@@potalAgents
+      fetch_and_save_portal_agents
+    end
+    # Find the agent by name and return its ID, or nil if not found
+    agent = @@potalAgents.find { |agent| agent["name"] == name }
+    agent ? agent["id"] : nil
+  end
+
   def exists? 
-    @@agentNames.include?(self.name)
+    !!@@potalAgents.find { |agent| agent["name"] == self.name }
   end
 end
