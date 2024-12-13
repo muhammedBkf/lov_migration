@@ -186,7 +186,8 @@ vocabsAcronymFilter = "VALUES ?acronym { #{vocabsAcronyms.map { |ontology| "\"#{
       SELECT DISTINCT #{select_vars.join(" ")} {
         ?catalog foaf:primaryTopic ?Vocabulary.
         ?Vocabulary a voaf:Vocabulary.
-
+        ?Vocabulary dcat:distribution ?Distribution.
+        ?Distribution a dcat:Distribution.
         #{where_clauses.join("\n  ")}
         #{vocabsAcronymFilter}
       } GROUP BY #{groupBy} ORDER BY (?released)
