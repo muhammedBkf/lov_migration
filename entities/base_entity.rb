@@ -122,7 +122,7 @@ def self.set_target_portal(value)
   def self.build_sparql_query(data, vocabsAcronyms=nil)
     select_vars = []
     where_clauses = []
-
+    groupBy = ""
     data.each do |key, properties|
       var_name = "_#{key}"
       lov_type = properties["lov_type"]
@@ -180,7 +180,8 @@ vocabsAcronymFilter = "VALUES ?acronym { #{vocabsAcronyms.map { |ontology| "\"#{
       PREFIX vann: <http://purl.org/vocab/vann/>
       PREFIX voaf: <http://purl.org/vocommons/voaf#>
       PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-
+      PREFIX dcat: <http://www.w3.org/ns/dcat#>
+      PREFIX owl:   <http://www.w3.org/2002/07/owl#> 
       ### Vocabularies contained in LOV and their prefix
       SELECT DISTINCT #{select_vars.join(" ")} {
         ?catalog foaf:primaryTopic ?Vocabulary.
@@ -188,9 +189,10 @@ vocabsAcronymFilter = "VALUES ?acronym { #{vocabsAcronyms.map { |ontology| "\"#{
 
         #{where_clauses.join("\n  ")}
         #{vocabsAcronymFilter}
-      } GROUP BY #{DATA_MAPPING["group_by"][self.type]} ORDER BY (?released)
+      } GROUP BY #{groupBy} ORDER BY (?released)
       SPARQL
   end
+  
   # This is used to upload an entity (Agent, Ontology, Submission)
   def upload
     url = URI.parse(LOVPORTAL_ENDPOINT)
