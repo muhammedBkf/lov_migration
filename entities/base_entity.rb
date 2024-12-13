@@ -69,8 +69,10 @@ def self.set_target_portal(value)
   end
 
 
-  def to_multipart_hash
-    instance_variables.each_with_object({}) do |var, hash|
+  def to_multipart_form_data
+    form_data = []
+    
+    instance_variables.each do |var|
       key = var.to_s.delete("@")
       value = instance_variable_get(var)
 
@@ -78,24 +80,26 @@ def self.set_target_portal(value)
       when Array
         value.each do |val|
           if val.is_a?(Hash)
-            # Use `[]` to denote array elements for hashes
+            # Handle nested hashes within array
             val.each do |subkey, subvalue|
-              hash["#{key}[][#{subkey}]"] = subvalue
+              form_data << ["#{key}[][#{subkey}]", subvalue]
             end
           else
-            hash["#{key}[]"] = val
+            form_data << ["#{key}[]", val]
           end
         end
       when Hash
         # Flatten the hash into form fields with keys like "key[subkey]"
         value.each do |subkey, subvalue|
-          hash["#{key}[#{subkey}]"] = subvalue
+          form_data << ["#{key}[#{subkey}]", subvalue]
         end
       else
         # Default case: assign the value directly
-        hash[key] = value
+        form_data << [key, value]
       end
     end
+    
+    form_data
   end
 
 
@@ -203,7 +207,7 @@ vocabsAcronymFilter = "VALUES ?acronym { #{vocabsAcronyms.map { |ontology| "\"#{
     request['content-type'] = 'multipart/form-data'
   
     # Set form data
-    form_data = to_multipart_hash
+    form_data = to_multipart_form_data
     request.set_form form_data, 'multipart/form-data'
 
     # Execute the request
