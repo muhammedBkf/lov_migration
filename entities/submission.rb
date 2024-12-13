@@ -2,6 +2,11 @@ require_relative 'base_entity'
 require 'net/http'
 
 class Submission < BaseEntity
+  def initialize(data)
+    super(data)
+    get_agents_id
+  end
+
   def self.type
     "Submission"
   end
