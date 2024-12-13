@@ -1,6 +1,7 @@
 require_relative 'base_entity' 
 require 'set'
 class Agent < BaseEntity
+  @@potalAgents = nil
   def initialize(data)
     super
     extract_identifiers
@@ -11,11 +12,10 @@ class Agent < BaseEntity
   def self.upload_endpoint
     "Agents"
   end
-  def self.fetch_and_save_agent_names
+  def self.fetch_and_save_portal_agents
     url = URI("#{LOVPORTAL_ENDPOINT}/agents")
     response = Net::HTTP.get(url)
-    agents = JSON.parse(response)
-    @@agentNames = agents.map { |agent| agent["name"] }.compact
+    @@potalAgents = JSON.parse(response)
   end
 
   def self.build_sparql_query(data)
