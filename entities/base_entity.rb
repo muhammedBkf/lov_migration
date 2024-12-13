@@ -1,5 +1,7 @@
 
 require_relative '../config/mapping'
+require 'multipart_post'
+
 require 'open-uri'
 require 'net/http'
 require 'json'
