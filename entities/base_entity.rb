@@ -3,7 +3,7 @@ require_relative '../config/mapping'
 require 'open-uri'
 require 'net/http'
 require 'json'
-
+AGENTS_ATTRIBUTES = ["hasContributor", "hasCreator", "publisher"] 
 class BaseEntity
   @@targetPortal = nil
 
