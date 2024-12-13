@@ -13,7 +13,11 @@ class BaseEntity
      self.class.attr_accessor key.to_sym
 
      # Set the attribute's value based on the "value" key in the properties hash
+      if DATA_MAPPING[self.class.type][key]["isArray"]
+        instance_variable_set("@#{key}", properties["value"].split(";"))
+      else
      instance_variable_set("@#{key}", properties["value"])
+      end
    end
   end
   
