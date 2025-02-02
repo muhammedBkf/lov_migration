@@ -65,8 +65,14 @@ DATA_MAPPING = {
       "optional" => false,
     },
     "released" => {
-      "lov_class" => "Distribution",
+      "lov_class" => "pullLocationn",
       "lov_type" => "dcterms:issued",
+      "optional" => false,
+      "pk" =>true
+    },
+    "version" => {
+      "lov_class" => "pullLocationn",
+      "lov_type" => "dcterms:title",
       "optional" => false,
       "pk" =>true
     },
