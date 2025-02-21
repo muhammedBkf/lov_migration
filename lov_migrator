@@ -70,8 +70,7 @@ def main(options)
       Ontology.set_target_portal(options[:targetPortal])
     end
     ontologies = []
-    Ontology.set_target_portal('LovPortal')
-    logger("Fetching all Ontologies") do
+        logger("Fetching all Ontologies") do
       ontologies = Ontology.fetch_all
     end
     
