@@ -51,8 +51,18 @@ def load_default_values(data)
       # Get the current value of the instance variable and update it
       updated_agents = instance_variable_get("@#{attribute}").map do |agent_name|
         # Call the method to get the agent ID
-        Agent.get_agent_id_by_name(agent_name)
-      end
+        agent_id = Agent.get_agent_id_by_name(agent_name)
+          
+        # If agent_id is nil, log the error to error_logs.txt
+        if agent_id.nil?
+          File.open("error_logs.txt", "a") do |file|
+            file.puts "Error: Cannot find agent with name '#{agent_name}'"
+          end
+          next nil # Skip this agent
+        end
+      
+        agent_id # Return the agent ID if it's not nil
+      end.compact
 
       # Set the updated value back to the instance variable
       instance_variable_set("@#{attribute}", updated_agents)
