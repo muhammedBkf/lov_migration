@@ -92,45 +92,36 @@ def main(options)
     end
     submissions = Submission.fetch_all(vocabsAcronyms)
     p submissions
-'''    unique_submissions = submissions.group_by { |sub| sub.acronym }.transform_values do |records|
-      # Select the record that has URI in pullLocation
-      records.find { |record| record.pullLocationn&.include?("http") } || records.first
-    end.values
-    p unique_submissions'''
+
     # this code is used to pull the latest submissions that has a file
     unique_submissions = submissions.group_by { |sub| sub.acronym }.transform_values do |records|
       # Filter records with URI first
-      uri_records = records.select { |record| record.pullLocationn&.include?("http") }
+      uri_records = records.select { |record| record.pullLocationn&.start_with?("http") }
       
-      # If there are URI records, find the most recent one
+      # If there are URI records, return all of them
       if uri_records.any?
-        uri_records.sort_by { |record| record.released || Time.at(0) }.reverse.first
+        uri_records
       else
         # Fallback to the first record if no URI records exist
-      records.first
+        [records.first]
       end
-    end.values
+    end.values.flatten
   
-    File.open("error_logs.txt", "a") do |file|  # Open the file in append mode
+    File.open("submission_status_logs.txt", "a") do |log_file|  # Open the log file in append mode
     unique_submissions.each do |submission|
       begin
         submission.pull_submission
-        submission.upload
-      rescue
-          p submission
-          response = submission.upload
-          p response.code, response.body
+          response = submission.upload  # Capture the response here
+    
+          # Log only the response code and body
+          log_file.puts("Response Code: #{response.code}")
+          log_file.puts("Response Body: #{response.body}")
+          log_file.puts("---")  # Separator for readability
+    
         rescue StandardError => e
-          # Write the error details to the file
-          file.puts("Error with submission: #{submission.inspect}")
-          file.puts("Exception: #{e.message}")
-          if defined?(response) && response
-            file.puts("Response Code: #{response.code}")
-            file.puts("Response Body: #{response.body}")
-          else
-            file.puts("No response available.")
-          end
-          file.puts("---")  # Separator for readability
+          # Log only the error message if an exception occurs
+          log_file.puts("Error: #{e.message}")
+          log_file.puts("---")  # Separator for readability
         end
         end
       end
