@@ -15,12 +15,19 @@ class Submission < BaseEntity
   end
   
   def pull_submission
+
+    # Create the ./tmp directory if it doesn't exist
+    folder_path = "./tmp/#{@acronym}"
+    FileUtils.mkdir_p(folder_path)
+  
     # Get the basename (filename without path) from the remote URI
     remote_filename = File.basename(URI.parse(@pullLocationn).path)
   
     # Construct the local file path with the remote filename
-    file_path = "./tmp/#{remote_filename}"
-  
+    file_path = "#{folder_path}/#{remote_filename}"
+p file_path
+    # Check if the file already exists
+    unless File.exist?(file_path)  
     uri = URI.parse(@pullLocationn)
     Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
       request = Net::HTTP::Get.new(uri)
@@ -29,6 +36,7 @@ class Submission < BaseEntity
         File.open(file_path, 'wb') do |file|
           response.read_body do |chunk|
             file.write(chunk)
+end
           end
         end
       end
