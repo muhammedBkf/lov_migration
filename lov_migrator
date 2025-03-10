@@ -7,13 +7,15 @@ require 'optparse'
 require 'logger'
 require 'benchmark'
 require 'csv'
+require 'dotenv'
+Dotenv.load
 
 require_relative 'entities/submission'
 require_relative 'entities/ontology'
 require_relative 'entities/agent'
 
-LOV_ENDPOINT = "http://localhost:3030/lov"
-LOVPORTAL_ENDPOINT = "http://0.0.0.0:9393"
+LOV_ENDPOINT = ENV['LOV_ENDPOINT']
+LOVPORTAL_ENDPOINT = ENV['LOVPORTAL_ENDPOINT']
 
 def parse_options
   options = {}
