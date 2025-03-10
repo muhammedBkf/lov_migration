@@ -16,7 +16,7 @@ class BaseEntity
 
      # Set the attribute's value based on the "value" key in the properties hash
       if DATA_MAPPING[self.class.type][key]["isArray"]
-        instance_variable_set("@#{key}", properties["value"].split(";"))
+        instance_variable_set("@#{key}", properties["value"].split("||"))
       else
      instance_variable_set("@#{key}", properties["value"])
       end
@@ -147,7 +147,7 @@ def self.set_target_portal(value)
         select_var = "?#{var_name}"
         groupBy << " #{select_var}"
       else
-        select_var = "(GROUP_CONCAT(DISTINCT ?#{var_name}; separator=\";\") AS ?#{key})"
+        select_var = "(GROUP_CONCAT(DISTINCT ?#{var_name}; separator=\"||\") AS ?#{key})"
       end
       select_vars << select_var
       
