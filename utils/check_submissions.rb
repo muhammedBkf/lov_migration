@@ -4,9 +4,9 @@ require 'uri'
 require 'json'
 
 
-LOV_ENDPOINT = "https://lov.linkeddata.es/dataset/lov/api/v2/vocabulary/info?vocab={vocab}"
-LOVPORTAL_ENDPOINT = "https://data.testportal.lirmm.fr"
 
+LOV_ENDPOINT = ENV['LOV_ENDPOINT'] + "{vocab}"
+LOVPORTAL_ENDPOINT = ENV['LOVPORTAL_ENDPOINT']
 
   # Function to read acronyms from the CSV file
   def read_acronyms(csv_file)
