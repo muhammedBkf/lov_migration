@@ -94,7 +94,7 @@ DATA_MAPPING = {
       "optional" => true,
     },
     "metadataVoc" => {
-      "lov_class" => "Distribution",
+      "lov_class" => "pullLocationn",
       "lov_type" => "voaf:metadataVoc",
       "optional" => true,
       "isArray" => true
@@ -123,31 +123,31 @@ DATA_MAPPING = {
     },
     # Relations
     "generalizes" => {
-      "lov_class" => "Distribution",
+      "lov_class" => "pullLocationn",
       "lov_type" => "voaf:generalizes",
       "optional" => true,
       "isArray" => true
     },
     "explanationEvolution" => {
-      "lov_class" => "Distribution",
+      "lov_class" => "pullLocationn",
       "lov_type" => "voaf:specializes",
       "optional" => true,
       "isArray" => true
     },
     "isAlignedTo" => {
-      "lov_class" => "Distribution",
+      "lov_class" => "pullLocationn",
       "lov_type" => "voaf:hasEquivalencesWith",
       "optional" => true,
       "isArray" => true
     },
     "ontologyRelatedTo" => {
-      "lov_class" => "Distribution",
+      "lov_class" => "pullLocationn",
       "lov_type" => "voaf:extends",
       "optional" => true,
       "isArray" => true
     },
     "useImports" => {
-      "lov_class" => "Distribution",
+      "lov_class" => "pullLocationn",
       "lov_type" => "owl:imports",
       "optional" => true,
       "isArray" => true
