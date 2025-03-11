@@ -21,6 +21,7 @@ def parse_options
   options = {}
   OptionParser.new do |opts|
     opts.banner = "Usage: lov_migrator [options]"
+    opts.on('--update', 'Update metadata') { options[:update] = true }
     opts.on('--agents', 'Start agents migration') { options[:agents] = true }
     opts.on('--vocabs') { options[:vocabs] = true }
     opts.on('--submissions ONTOLOGIES') do |ontologies|
@@ -39,12 +40,11 @@ def parse_options
   options
 end
 
-def logger(text, &block)
-  puts ">> #{text} starting..."
-time = Benchmark.realtime do
-  block.call
-end
-puts "#{text} finished in #{time} seconds"
+def logger(log_file, message, level = "INFO")
+  timestamp = Time.now.strftime("%Y-%m-%d %H:%M:%S")
+  full_message = "[#{timestamp}] [#{level}] #{message}"
+  log_file.puts(full_message)
+  puts full_message
 end
 
 def main(options)
@@ -68,22 +68,28 @@ def main(options)
   end
 
   if options[:vocabs]
-    if options[:targetPortal]
-      Ontology.set_target_portal(options[:targetPortal])
-    end
-    ontologies = []
-        logger("Fetching all Ontologies") do
+    File.open("vovabularies_status_logs.log", "a") do |log_file|
+      if options[:targetPortal]
+        Ontology.set_target_portal(options[:targetPortal])
+      end
+      ontologies = []
+      logger(log_file, "Fetching all Ontologies") 
       ontologies = Ontology.fetch_all
-    end
-    
-    ontologies.each do |ontology|
-      logger("Uploading #{ontology.name} to LovPortal") do   
+
+      ontologies.each do |ontology|
+        logger(log_file, "Uploading #{ontology.name} to LovPortal")    
         response = ontology.upload
-        p response.code, response.body
-      end  
+        if response.code == "201"
+          logger(log_file, "#{ontology.name} Uploaded successfully #{response.code}")
+        elsif response.code == "409"
+          logger(log_file, "Vocabulary exists already #{response.code}")
+        else
+          logger(log_file, "Upload Response Code: #{response.code}", "ERROR")
+        end
+      end
     end
   end
-
+  
   if options[:submissions]
     if options[:targetPortal]
       Submission.set_target_portal(options[:targetPortal])
@@ -93,7 +99,6 @@ def main(options)
       vocabsAcronyms = options[:submissions]
     end
     submissions = Submission.fetch_all(vocabsAcronyms)
-    p submissions
 
     # this code is used to pull the latest submissions that has a file
     unique_submissions = submissions.group_by { |sub| sub.acronym }.transform_values do |records|
@@ -109,25 +114,69 @@ def main(options)
       end
     end.values.flatten
   
-    File.open("submission_status_logs.txt", "a") do |log_file|  # Open the log file in append mode
-    unique_submissions.each do |submission|
-      begin
-        submission.pull_submission
-          response = submission.upload  # Capture the response here
+    File.open("submission_status_logs.log", "a") do |log_file|  # Open the log file in append mode
+      # Group submissions by their acronyms
+      grouped_submissions = unique_submissions.group_by(&:acronym)
     
-          # Log only the response code and body
-          log_file.puts("Response Code: #{response.code}")
-          log_file.puts("Response Body: #{response.body}")
-          log_file.puts("---")  # Separator for readability
+      grouped_submissions.each do |acronym, submissions|
+        if options[:update]
+          # Fetch the latest version for the current acronym
+          latest_version = submissions.last.fetch_latest_submission_version
     
-        rescue StandardError => e
-          # Log only the error message if an exception occurs
-          log_file.puts("Error: #{e.message}")
-          log_file.puts("---")  # Separator for readability
-        end
+          # Find the index of the submission that matches the latest version
+          latest_submission_index = submissions.find_index { |submission| submission.version == latest_version }
+          if latest_submission_index == submissions.size - 1
+            submission = submissions.last
+            submission.pull_submission
+            response = submission.update  # Call update for submissions after the latest version
+    
+            logger(log_file, "Updated the Metadata of version (#{submission.version}) of the Vocabulary '#{acronym.upcase}'.")
+          else
+            # Process all submissions after the latest version
+            submissions_to_process = submissions[(latest_submission_index + 1)..-1]
+          
+            if submissions_to_process.any?
+              # Ask for user confirmation
+              puts "Found #{submissions_to_process.size} new submission(s) for '#{acronym.upcase}' after version #{latest_version}."
+              print "Do you want to upload these submissions? (yes/no): "
+              user_input = gets.chomp.downcase
+          
+              if user_input == "yes" || user_input == "y"
+                submissions_to_process.each do |submission|
+                  begin
+                    submission.pull_submission
+                    response = submission.upload  # Call upload for submissions after the latest version
+                    logger(log_file, "Uploaded new version (#{submission.version}) of the Vocabulary '#{acronym.upcase}'.")
+                  rescue StandardError => e
+                    logger(log_file, "Error updating version (#{submission.version}) of the Vocabulary '#{acronym.upcase}': #{e.message}", "ERROR")
+                  end
+                end
+              else
+                logger(log_file, "Skipped processing new submissions for '#{acronym.upcase}' after version #{latest_version}.")
+              end
+            else
+              logger(log_file, "No new submissions found for '#{acronym.upcase}' after version #{latest_version}.")
+            end
+          end
+        else
+          # Process all submissions if not in update mode
+          submissions.each do |submission|
+            begin
+              submission.pull_submission
+              response = submission.upload  # Call upload for normal submissions
+              logger(log_file, "Uploaded version (#{submission.version}) of the Vocabulary '#{acronym.upcase}'.")
+            rescue StandardError => e
+              logger(log_file, "Error uploading version (#{submission.version}) of the Vocabulary '#{acronym.upcase}': #{e.message}", "ERROR")
+            end
+          end
         end
       end
+    end
+    
+    
+    
   end
+  
 
 end
 
