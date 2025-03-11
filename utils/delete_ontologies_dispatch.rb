@@ -1,12 +1,17 @@
 require 'csv'
 require 'net/http'
 require 'uri'
+require 'dotenv'
+Dotenv.load
+
+LOVPORTAL_ENDPOINT = ENV['LOVPORTAL_ENDPOINT']
 
 # Function to send DELETE request
 def delete_ontology(prefix)
-  url = URI("https://data.lovportal.lirmm.fr/ontologies/#{prefix}")
+  url = URI("#{LOVPORTAL_ENDPOINT}/ontologies/#{prefix}")
+
   request = Net::HTTP::Delete.new(url)
-  response = Net::HTTP.start(url.hostname, url.port, use_ssl: true) do |http|
+  response = Net::HTTP.start(url.hostname, url.port) do |http|
     http.request(request)
   end
 

@@ -25,7 +25,6 @@ class Submission < BaseEntity
   
     # Construct the local file path with the remote filename
     file_path = "#{folder_path}/#{remote_filename}"
-p file_path
     # Check if the file already exists
     unless File.exist?(file_path)  
     uri = URI.parse(@pullLocationn)

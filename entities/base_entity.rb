@@ -171,7 +171,6 @@ def self.set_target_portal(value)
 end
     # only query Vocabs of the selected target portal
     vocabsAcronymFilter = ""
-    p vocabsAcronyms
     if vocabsAcronyms
 
 vocabsAcronymFilter = "VALUES ?acronym { #{vocabsAcronyms.map { |ontology| "\"#{ontology}\"" }.join(" ")} }"
