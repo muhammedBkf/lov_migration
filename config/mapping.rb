@@ -88,6 +88,11 @@ DATA_MAPPING = {
       "optional" => false,
       "pk" => true
     },
+    "naturalLanguage" => {
+      "lov_class" => "pullLocationn",
+      "lov_type" => "dcterms:language",
+      "optional" => true,
+    },
     "homepage" => {
       "lov_class" => "Vocabulary",
       "lov_type" => "foaf:homepage",
