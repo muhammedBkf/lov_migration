@@ -65,7 +65,7 @@ DATA_MAPPING = {
       "optional" => false,
     },
     "released" => {
-      "lov_class" => "pullLocationn",
+      "lov_class" => "Vocabulary",
       "lov_type" => "dcterms:issued",
       "optional" => false,
       "pk" =>true
